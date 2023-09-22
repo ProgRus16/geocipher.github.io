@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Geocipher</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <!--
+            Укажите свой API-ключ. Тестовый ключ НЕ БУДЕТ работать на других сайтах.
+            Получить ключ можно в Кабинете разработчика: https://developer.tech.yandex.ru/keys/
+        -->
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=047fb8bb-dfd1-4343-a8e9-db75bfd09a06"
+        type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@2.3.0/dist/socket.io.slim.js"></script>
+    <style>
+        html,
+        body,
+        #map,
+        #map_get {
+            width: 540px;
+            height: 400px;
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+    <script src="mapSEND.js"></script>
+</head>
+
+<body>
+    <nav class="menu">
+        <form>
+            <div id="nav-radio">
+                <input name="radio-display" type="radio" value="1" checked> Отправить
+                <input name="radio-display" type="radio" value="2"> Получить
+
+            </div>
+
+            </div>
+        </form>
+    </nav>
+    <div class="block-container">
+        <div id="block1">
+            <div class="cipher" style="display: flex;
+                                            flex-direction: column;
+                                            justify-content: center;
+                                            align-content: center;
+                                            align-items: center;  
+                                            margin: 5px                                  
+                                            ">
+
+                <input type="text" id="input_cipher">
+                <button id="enter_input" type="submit" onclick="">Отправить</button>
+                <script>
+                    enter_input.onclick = function () {
+
+                        function handleFormSubmit(event) {
+                            // Просим форму не отправлять данные самостоятельно
+                            event.preventDefault()
+                            msg = document.getElementById('input_cipher').value
+                            console.log(msg)
+                        }
+                        handleFormSubmit(event);
+
+                        const socket = io('ws://localhost:1605');
+                        // Обработчик события подключения к серверу
+                        socket.connect("/", { secure: true, transports: ["flashsocket", "polling", "websocket"] });
+                        socket.on('connect', () => {
+                            console.log('Подключено к серверу');
+
+                            // Пример отправки JSON на сервер
+                            const sendData = {
+                                message: msg,
+                                coordinates: coords
+                            };
+                            socket.emit('json', JSON.stringify(sendData));
+                        });
+                        // Обработчик события получения нового JSON от сервера
+                        socket.on('newJson', (json) => {
+                            const newData = JSON.parse(json);
+                            console.log('Получен новый JSON:', newData);
+                        });
+                        // Обработчик события отключения от сервера
+                        socket.on('disconnect', () => {
+                            console.log('Отключено от сервера');
+                        });
+                    }
+                </script>
+
+            </div>
+            <div id="map"></div>
+        </div>
+
+        <div id="block2">
+            <div id="map_get"></div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@2/dist/socket.io.js"></script>
+
+    
+    <script src="mapGET.js"></script>
+    <script src="radio.js"></script>
+</body>
+
+</html>
