@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Geocipher</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <!--
+            Укажите свой API-ключ. Тестовый ключ НЕ БУДЕТ работать на других сайтах.
+            Получить ключ можно в Кабинете разработчика: https://developer.tech.yandex.ru/keys/
+        -->
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=047fb8bb-dfd1-4343-a8e9-db75bfd09a06"
+        type="text/javascript"></script>
+
+    <style>
+        html,
+        body,
+        #map,
+        #map_get {
+            width: 540px;
+            height: 400px;
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+    <script>
+        ymaps.ready(init);
+        var coords;
+        function init() {
+            var myPlacemark
+            var mapSEND = new ymaps.Map("map", {
+                center: [55.0415, 82.9346],
+                zoom: 9,
+                controls: ['zoomControl', 'searchControl', 'fullscreenControl']
+            }, {
+                searchControlProvider: 'yandex#search',
+                suppressMapOpenBlock: true
+            });
+
+
+
+            // Слушаем клик на карте.
+            mapSEND.events.add('click', function (e) {
+                coords = e.get('coords');
+
+                // Если метка уже создана – просто передвигаем ее.
+                if (myPlacemark) {
+                    myCircle.geometry.setCoordinates(coords)
+                    myPlacemark.geometry.setCoordinates(coords);
+
+                }
+                // Если нет – создаем.
+                else {
+                    myCircle = createCircle(coords)
+                    myPlacemark = createPlacemark(coords);
+                    console.log(myCircle)
+                    console.log(myPlacemark)
+                    mapSEND.geoObjects.add(myCircle).add(myPlacemark)
+
+                    // Слушаем событие окончания перетаскивания на метке.
+                    myPlacemark.events.add('dragend', function () {
+                        getAddress(myPlacemark.geometry.getCoordinates());
+                    });
+                }
+                getAddress(coords);
+                return coords
+            });
+
+            // Создание метки.
+            function createPlacemark(coords) {
+                return new ymaps.Placemark(coords, {
+                    iconCaption: 'поиск...'
+                }, {
+                    preset: 'islands#violetDotIconWithCaption',
+                    draggable: false
+                });
+            }
+            function createCircle(coords) {
+                return new ymaps.Circle([
+                    // Координаты центра круга.
+                    coords,
+                    // Радиус круга в метрах.
+                    100
+                ], {
+                    // Описываем свойства круга.
+                    // Содержимое балуна.
+                    balloonContent: "Радиус круга - 100 м",
+                    // Содержимое хинта.
+                    hintContent: "Радиус адреса"
+                }, {
+                    // Задаем опции круга.
+                    // Включаем возможность перетаскивания круга.
+                    draggable: false,
+                    // Цвет заливки.
+                    // Последний байт (77) определяет прозрачность.
+                    // Прозрачность заливки также можно задать используя опцию "fillOpacity".
+                    fillColor: "#DB709377",
+                    // Цвет обводки.
+                    strokeColor: "#990066",
+                    // Прозрачность обводки.
+                    strokeOpacity: 0.8,
+                    // Ширина обводки в пикселях.
+                    strokeWidth: 5
+                });
+            }
+            // Определяем адрес по координатам (обратное геокодирование).
+            function getAddress(coords) {
+                myPlacemark.properties.set('iconCaption', 'поиск...');
+                ymaps.geocode(coords).then(function (res) {
+                    var firstGeoObject = res.geoObjects.get(0);
+
+                    myPlacemark.properties
+                        .set({
+                            // Формируем строку с данными об объекте.
+                            iconCaption: [
+                                // Название населенного пункта или вышестоящее административно-территориальное образование.
+                                firstGeoObject.getLocalities().length ? firstGeoObject.getLocalities() : firstGeoObject.getAdministrativeAreas(),
+                                // Получаем путь до топонима, если метод вернул null, запрашиваем наименование здания.
+                                firstGeoObject.getThoroughfare() || firstGeoObject.getPremise()
+                            ].filter(Boolean).join(', '),
+                            // В качестве контента балуна задаем строку с адресом объекта.
+                            balloonContent: firstGeoObject.getAddressLine()
+                        });
+                });
+            }
+
+
+        }
+
+    </script>
+</head>
+
+<body>
+    <nav class="menu">
+        <form>
+            <div id="nav-radio">
+                <input name="radio-display" type="radio" value="1" checked> Отправить
+                <input name="radio-display" type="radio" value="2"> Получить
+
+            </div>
+
+            </div>
+        </form>
+    </nav>
+    <div class="block-container">
+        <div id="block1">
+            <div class="cipher_send" style="display: flex;
+                                            flex-direction: column;
+                                            justify-content: center;
+                                            align-content: center;
+                                            align-items: center;  
+                                            margin: 5px                                  
+                                            ">
+
+                <input type="text" id="input_message" placeholder="Сообщение">
+                <input type="text" id="input_port_send" placeholder="Порт">
+                <input type="password" id="input_password_send" placeholder="Пароль">
+                <button id="enter_input_send" type="submit" onclick="">Отправить</button>
+                <script>
+                    enter_input_send.onclick = function () {
+                        if (coords != undefined) {
+                            function handleFormSubmit(event) {
+                                // Просим форму не отправлять данные самостоятельно
+                                event.preventDefault()
+                                msg = document.getElementById('input_message').value
+                                prt = document.getElementById('input_port_send').value
+                                pswrd = document.getElementById('input_password_send').value
+                                console.log(msg)
+                                console.log(prt)
+                                console.log(pswrd)
+                            }
+                            handleFormSubmit(event);
+                            if (msg != "" && prt != "" && pswrd != "") {
+                                if (Number.isInteger(parseInt(prt)) && 999 < parseInt(prt) && parseInt(prt) < 10000) {
+                                    const socket = io('ws://localhost:1605');
+                                    // Обработчик события подключения к серверу
+                                    socket.connect("/", { secure: true, transports: ["flashsocket", "polling", "websocket"] });
+                                    socket.on('connect', () => {
+                                        console.log('Подключено к серверу');
+                                        // Пример отправки JSON на сервер
+                                        const sendData = {
+                                            message: msg,
+                                            coordinates: coords,
+                                            port: prt,
+                                            password: pswrd
+                                        };
+                                        console.log(coords)
+                                        socket.emit('json', JSON.stringify(sendData));
+                                    });
+                                    // Обработчик события отключения от сервера
+                                    socket.on('disconnect', () => {
+                                        console.log('Отключено от сервера');
+                                    });
+                                }
+                                else {
+                                    alert("Введите целое четырехзначное число в строке \"Порт\"")
+                                }
+                            }
+                            else {
+                                alert("Заполните все поля")
+                            }
+                        }
+                        else {
+                            alert("Укажите координаты")
+                        }
+                    }
+                </script>
+            </div>
+            <div id="map"></div>
+        </div>
+
+        <div id="block2">
+            <div class="cipher_get" style="display: flex;
+                                            flex-direction: column;
+                                            justify-content: center;
+                                            align-content: center;
+                                            align-items: center;  
+                                            margin: 5px                                  
+                                            ">
+                <input type="text" id="input_port_get" placeholder="Порт">
+                <input type="password" id="input_password_get" placeholder="Пароль">
+                <button id="enter_input_get" type="submit" onclick="">Отправить</button>
+                <div id="map_get"></div>
+                <script>
+                    enter_input_get.onclick = function () {
+                        const socket = io('ws://localhost:1605');
+                        socket.on('connect', () => {
+                            console.log('Подключено к серверу');
+                            // Пример отправки JSON на сервер
+                            const sendData = {
+                                message: "give me THIS"
+                            };
+                            socket.emit('json', JSON.stringify(sendData));
+                        });
+                        socket.on('response', (json) => {
+                            console.log('Получен JSON:', json);
+                        });
+                    }
+                </script>
+                <script>
+                    ymaps.ready(init)
+                    function init() {
+                        var geolocation = ymaps.geolocation,
+                            map_get = new ymaps.Map('map_get', {
+                                center: [55.0415, 82.9346],
+                                zoom: 10
+                            }, {
+                                searchControlProvider: 'yandex#search'
+                            });
+                        // Сравним положение, вычисленное по ip пользователя и
+                        // положение, вычисленное средствами браузера.
+                        geolocation.get({
+                            provider: 'browser',
+                            mapStateAutoApply: true
+                        }).then(function (result) {
+                            // Синим цветом пометим положение, полученное через браузер.
+                            // Если браузер не поддерживает эту функциональность, метка не будет добавлена на карту.
+                            result.geoObjects.options.set('preset', 'islands#blueCircleIcon');
+                            map_get.geoObjects.add(result.geoObjects);
+                        });
+
+
+
+
+                        // Создаем круг.
+                        var circle = new ymaps.Circle([
+                            // Координаты центра круга.
+                            result.geoObjects.position,
+                            // Радиус круга в метрах.
+                            100
+                        ], {
+                            // Описываем свойства круга.
+                            // Содержимое балуна.
+                            balloonContent: "Радиус круга - 100 м",
+                            // Содержимое хинта.
+                            hintContent: "Радиус адреса"
+                        }, {
+                            // Задаем опции круга.
+                            // Включаем возможность перетаскивания круга.
+                            draggable: false,
+                            // Цвет заливки.
+                            // Последний байт (77) определяет прозрачность.
+                            // Прозрачность заливки также можно задать используя опцию "fillOpacity".
+                            fillColor: "#DB709377",
+                            // Цвет обводки.
+                            strokeColor: "#990066",
+                            // Прозрачность обводки.
+                            strokeOpacity: 0.8,
+                            // Ширина обводки в пикселях.
+                            strokeWidth: 5
+                        });
+
+                        // Добавляем круг на карту.
+                        mapGET.geoObjects.add(circle);
+                    }
+                </script>
+            </div>
+
+        </div>
+
+
+
+        <script>
+            // при загрузке
+            let id = $("#nav-radio input:checked").val();
+            $('.block-container > div').hide();
+            $('.block-container > #block' + id + '').show();
+
+            //при изменении
+            $("#nav-radio").on("change", "input[type=radio]", function () {
+
+                let id = $(this).val();
+                $('.block-container > div').hide();
+                $('.block-container > #block' + id + '').show();
+
+            });</script>
+        <script src="https://cdn.jsdelivr.net/npm/socket.io-client@2.3.0/dist/socket.io.js"></script>
+</body>
+
+</html>
