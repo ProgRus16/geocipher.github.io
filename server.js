@@ -3,7 +3,7 @@ var CryptoJS = require("crypto-js");
 
 const sqlite3 = require('sqlite3').verbose();
 
-const db = new sqlite3.Database('C:/sqlite/SQLiteStudio/db');
+const db = new sqlite3.Database('db');
 
 
 const server = http.createServer();
