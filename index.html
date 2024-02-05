@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<!--Code written by Dezhiov Maksim-->
+<html style="display: flex;flex-direction: column;align-items: center;align-content: center; width: 100vw;">
+
+<head>
+    <title>Geocipher</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript"
+        src="https://rawgit.com/victornpb/f639f37373be0f6e82e1/raw/5d8f7ee8b32ae04de087d2377d8086e3389ee411/AES.js"></script>
+    <script type="text/javascript" src="sha-256.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <!--
+            Укажите свой API-ключ. Тестовый ключ НЕ БУДЕТ работать на других сайтах.
+            Получить ключ можно в Кабинете разработчика: https://developer.tech.yandex.ru/keys/
+        -->
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=047fb8bb-dfd1-4343-a8e9-db75bfd09a06"
+        type="text/javascript"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@2.3.0/dist/socket.io.js"></script>
+
+    <style>
+        html,
+        body,
+        #map,
+        #map_get {
+            width: 100%;
+            height: 50vh;
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+
+</head>
+
+<body style="display: flex;flex-direction: column;align-items: center;align-content: center;">
+    <nav class="menu">
+        <form>
+            <div id="nav-radio">
+                <input name="radio-display" type="radio" value="1" checked> Отправить
+                <input name="radio-display" type="radio" value="2"> Получить
+
+            </div>
+
+            </div>
+        </form>
+    </nav>
+    <div class="block-container" style="display: flex;
+    justify-content: center;">
+        <div id="block1" style="display: flex;flex-direction: column; width: 50vw;">
+            <div class="cipher_send" style="display: flex;
+            flex-direction: column-reverse;
+            justify-content: space-between;
+            align-content: center;
+            align-items: center;
+            margin: 5px                                 
+                                            ">
+                <button id="enter_input_send" onclick="enter_input_send_onclick()"
+                    style="margin: 5px;">Отправить</button>
+                <textarea type="text" id="input_message" placeholder="Сообщение"
+                    style="width: 100%; height: 25vh; margin: 5px;"></textarea>
+
+                <div style="display: flex; flex-direction: row;">
+                    <input type="text" id="input_login_send" placeholder="Логин" style="height: 5vh; width: 15vw;
+                    margin: 5px; padding: 0px 0px 0px 0.5vw;">
+                    <input type="password" id="input_password_send" placeholder="Пароль"
+                        style="height: 5vh; width: 15vw; margin: 5px; padding: 0px 0px 0px 0.5vw;">
+                    <!-- <div class="datetime" style="margin-top: 10px; margin-bottom: 10px;">
+                    <input type="date" id="date" name="trip-start" , style="width: 172px; display: flex;">
+                    <input type="time" id="time" style="width: 172px;">
+                    <script>
+                        var date = new Date();
+                        const date_const = document.querySelector('#date');
+
+                        var resultValueMin = `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}-${date.getUTCDate()}`
+                        var resultMax = `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}-${date.getUTCDate()}`
+                        date_const.setAttribute('value', String(resultValueMin));
+                        date_const.setAttribute('min', String(resultValueMin));
+                        date_const.setAttribute('max', String(resultMax));
+                    </script>
+                </div> -->
+                    <input type="number" id="input_radius" placeholder="Радиус (в метрах)" value="100"
+                        style="height: 5vh; width: 15vw; margin: 5px; padding: 0px 0px 0px 0.5vw;">
+                </div>
+
+
+
+                <script src="sendData.js"></script>
+            </div>
+            <script src="mapSEND.js"></script>
+            <div id="map" style="margin: 5px;"></div>
+        </div>
+
+        <div id="block2">
+            <div class="cipher_get" style="display: flex;
+                                            flex-direction: column;
+                                            justify-content: center;
+                                            align-content: center;
+                                            align-items: center;  
+                                            margin: 5px                                  
+                                            ">
+                <div style="display: flex; flex-direction: row;">
+                    <input type="text" id="input_login_get" placeholder="Логин" style="height: 5vh; width: 15vw;
+                    margin: 5px; padding: 0px 0px 0px 0.5vw;">
+                    <input type="password" id="input_password_get" placeholder="Пароль" style="height: 5vh; width: 15vw;
+                    margin: 5px; padding: 0px 0px 0px 0.5vw;">
+                </div>
+
+                <button id="enter_input_get" onclick="enter_input_get_onclick()" style="margin: 5px;">Получить</button>
+                <script src="getData.js"></script>
+                <div class="message"></div>
+                <div id="map_get" style='display:none'></div>
+
+
+            </div>
+
+        </div>
+
+
+
+        <script src="radio.js"></script>
+
+</body>
+
+</html>
