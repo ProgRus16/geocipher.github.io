@@ -1,3 +1,4 @@
+//The code was written by Dezhinov Maxim
 const http = require('http');
 var CryptoJS = require("crypto-js");
 
